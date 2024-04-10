@@ -17,29 +17,21 @@ def user_interact():
     return search_query, top_n, filter_words, min_salary
 
 
-def get_filter_vacancies(vacancies_list, words_for_filter):
+def get_filtered_vacancies(vacancies_list, words_for_filter):
     filtered_list = []
-    try:
-        for vacancy in vacancies_list:
-            for word in words_for_filter:
-                if word in vacancy.responsibility or word in vacancy.requirement:
-                    filtered_list.append(vacancy)
-                    break
-        return filtered_list
-    except TypeError:
-        return vacancies_list
+    for vacancy in vacancies_list:
+        for word in words_for_filter:
+            if word in vacancy.responsibility or word in vacancy.requirement:
+                filtered_list.append(vacancy)
+                break
+    return filtered_list
 
 
 def get_vacancies_by_salary(vacancies, min_salary):
     only_salary_vacancies = []
     for vacancy in vacancies:
-        try:
-            if vacancy >= min_salary:
-                only_salary_vacancies.append(vacancy)
-        except AttributeError:
-            continue
-        except TypeError:
-            continue
+        if vacancy >= min_salary:
+            only_salary_vacancies.append(vacancy)
     return only_salary_vacancies
 
 

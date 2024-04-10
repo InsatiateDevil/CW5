@@ -5,26 +5,76 @@ from config import ROOT_DIR
 
 
 class Vacancy:
-    def __init__(self, vacancy_dict):
-        self.name = vacancy_dict['name']
-        if not vacancy_dict.get('salary'):
-            self.__salary = None
-            self.salary_from = 0
-            self.salary_to = 0
-        else:
-            self.salary_from = vacancy_dict.get('salary').get('from')
-            self.salary_to = vacancy_dict.get('salary').get('to')
-        self.employer = vacancy_dict['employer']['name']
-        self.currency = self.get_currency(vacancy_dict['salary'])
-        self.experience = vacancy_dict['experience']['name']
-        self.schedule = vacancy_dict['schedule']['name']
-        self.employment = vacancy_dict['employment']['name']
-        self.requirement = self.check_source_info(vacancy_dict['snippet']['requirement'])
-        self.responsibility = self.check_source_info(vacancy_dict['snippet']['responsibility'])
-        self.professional_roles = ', '.join(
-            [professional_role['name'] for professional_role in
-             vacancy_dict['professional_roles']])
-        self.url = vacancy_dict['alternate_url']
+    def __init__(self, name, salary_from, salary_to, employer, currency,
+                 experience, schedule, employment, requirement, responsibility,
+                 professional_roles, url):
+        self.name = name
+        self.salary_from = salary_from
+        self.salary_to = salary_to
+        self.employer = employer
+        self.currency = currency
+        self.experience = experience
+        self.schedule = schedule
+        self.employment = employment
+        self.requirement = requirement
+        self.responsibility = responsibility
+        self.professional_roles = professional_roles
+        self.url = url
+
+    @classmethod
+    def get_list_with_objects(cls, list_with_vacancies):
+        returned_list = []
+        for vacancy in list_with_vacancies:
+            name = vacancy['name']
+            if not vacancy.get('salary'):
+                salary_from = 0
+                salary_to = 0
+                currency = 0
+            else:
+                salary_from = vacancy.get('salary').get('from')
+                salary_to = vacancy.get('salary').get('to')
+                currency = cls.check_source_info(vacancy['salary']['currency'])
+            employer = vacancy['employer']['name']
+            experience = vacancy['experience']['name']
+            schedule = vacancy['schedule']['name']
+            employment = vacancy['employment']['name']
+            requirement = cls.check_source_info(
+                vacancy['snippet']['requirement'])
+            responsibility = cls.check_source_info(
+                vacancy['snippet']['responsibility'])
+            professional_roles = ', '.join(
+                [professional_role['name'] for professional_role in
+                 vacancy['professional_roles']])
+            url = vacancy['alternate_url']
+            vacancy_object = cls(name, salary_from, salary_to, employer,
+                                 currency, experience, schedule, employment,
+                                 requirement, responsibility,
+                                 professional_roles, url)
+            returned_list.append(vacancy_object)
+        return returned_list
+
+    @classmethod
+    def get_objects_list_from_objects_dict(cls, list_with_vacancies):
+        returned_list = []
+        for vacancy in list_with_vacancies:
+            name = vacancy['name']
+            salary_from = vacancy['salary_from']
+            salary_to = vacancy['salary_to']
+            currency = vacancy['currency']
+            employer = vacancy['employer']
+            experience = vacancy['experience']
+            schedule = vacancy['schedule']
+            employment = vacancy['employment']
+            requirement = vacancy['requirement']
+            responsibility = vacancy['responsibility']
+            professional_roles = vacancy['professional_roles']
+            url = vacancy['url']
+            vacancy_object = cls(name, salary_from, salary_to, employer,
+                                 currency, experience, schedule, employment,
+                                 requirement, responsibility,
+                                 professional_roles, url)
+            returned_list.append(vacancy_object)
+        return returned_list
 
     @staticmethod
     def check_source_info(value):
@@ -41,7 +91,7 @@ class Vacancy:
             return 'тип валюты не указан'
 
     def convert_currency(self, currency):
-        if currency in ['RUR', 'KZT', 'BYR', 'UZS']:
+        if currency:
             if currency == 'RUR':
                 return 'руб.'
             elif currency == 'KZT':
@@ -50,6 +100,12 @@ class Vacancy:
                 return 'белорус. руб.'
             elif currency == 'UZS':
                 return 'узбек. сум'
+            elif currency == 'EUR':
+                return 'евро'
+            elif currency == 'USD':
+                return 'долларов'
+        elif currency == 0:
+            return 'валюта не была указана'
         else:
             return (f'неизвестный тип валюты '
                     f'с кодовым обозначением {self.currency}')
@@ -64,16 +120,11 @@ class Vacancy:
             if not self.salary_to:
                 return (f"Заработная плата: от {self.salary_from} "
                         f"{self.currency}")
+            if self.salary_from == self.salary_to:
+                return (f"Заработная плата: {self.salary_from} "
+                        f"{self.currency}")
             return (f"Заработная плата: от {self.salary_from} до "
                     f"{self.salary_to} {self.currency}")
-
-    @classmethod
-    def get_list_with_objects(cls, list_with_vacancies):
-        returned_list = []
-        for vacancy in list_with_vacancies:
-            vacancy_object = cls(vacancy)
-            returned_list.append(vacancy_object)
-        return returned_list
 
     def __eq__(self, other):  # – для равенства ==
         if isinstance(other, (Vacancy, int)):

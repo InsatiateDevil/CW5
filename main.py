@@ -3,8 +3,8 @@ import pathlib
 
 from config import ROOT_DIR
 from src.headhunterapi import HeadHunterAPI
-from src.jsonsaver import JSONSaver
-from src.utils import get_filter_vacancies, print_vacancies, \
+from src.jsonworker import JSONWorker
+from src.utils import get_filtered_vacancies, print_vacancies, \
     get_top_vacancies, get_sorted_vacancies, get_vacancies_by_salary
 from src.vacancy import Vacancy
 
@@ -46,8 +46,8 @@ def main():
                     filter_words = input(
                         "Введите ключевые слова для фильтрации "
                         "вакансий через пробел: ").split(" ")
-                    vacancies_list = get_filter_vacancies(vacancies_list,
-                                                          filter_words)
+                    vacancies_list = get_filtered_vacancies(vacancies_list,
+                                                            filter_words)
                     print('Вакансии отфильтрованы по ключевым словам')
                 elif user_input == '3':
                     min_salary = int(
@@ -70,7 +70,7 @@ def main():
                     file_name = input(
                         'Введите название файла для сохранения данных')
                     file_path = os.path.join(ROOT_DIR, 'data', file_name)
-                    jsonsaver = JSONSaver(file_path)
+                    jsonsaver = JSONWorker(file_path)
                     if os.path.exists(file_path):
                         confirm = input(
                             'Такой файл уже есть, '
@@ -79,15 +79,15 @@ def main():
                             confirm = input(
                                 'Желаете перезаписать или дописать файл? п/д')
                             if confirm == 'д':
-                                jsonsaver.add_vacancy(vacancies_list)
+                                jsonsaver.add_vacancies(vacancies_list)
                                 print('Вакансии добавлены в файл')
                             elif confirm == 'п':
-                                jsonsaver.write_vacancy(vacancies_list)
+                                jsonsaver.write_vacancies(vacancies_list)
                                 print('Вакансии сохранены в файл с перезаписью')
                             else:
                                 print('Попробуйте ввести вновь')
                     else:
-                        jsonsaver.write_vacancy(vacancies_list)
+                        jsonsaver.write_vacancies(vacancies_list)
                         print('Вакансии сохранены в файл')
                 else:
                     print('Попробуйте ввести вновь')
