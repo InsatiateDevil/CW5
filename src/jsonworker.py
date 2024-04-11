@@ -20,14 +20,14 @@ class JSONWorker(FileWorker):
             json.dump(for_add, file, ensure_ascii=False, indent=4)
 
     def add_vacancies(self, vacancies):
-        with open(self.path, '+r', encoding='utf-8') as file:
+        with open(self.path, 'r', encoding='utf-8') as file:
             old_data = json.load(file)
             for vacancy in vacancies:
                 old_data.append(vacancy.__dict__)
         with open(self.path, 'w', encoding='utf-8') as file:
             json.dump(old_data, file, ensure_ascii=False, indent=4)
 
-    def del_vacancies(self, vacancy):
+    def del_vacancy_full(self, vacancy):
         with open(self.path, 'r', encoding='utf-8') as file:
             old_data = json.load(file)
             while vacancy in old_data:

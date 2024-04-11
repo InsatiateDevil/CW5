@@ -25,22 +25,22 @@ class Vacancy:
     def get_list_with_objects(cls, list_with_vacancies):
         returned_list = []
         for vacancy in list_with_vacancies:
-            name = vacancy['name']
+            name = Vacancy.check_data_str(vacancy['name'])
             if not vacancy.get('salary'):
                 salary_from = 0
                 salary_to = 0
                 currency = 0
             else:
-                salary_from = vacancy.get('salary').get('from')
-                salary_to = vacancy.get('salary').get('to')
-                currency = cls.check_source_info(vacancy['salary']['currency'])
-            employer = vacancy['employer']['name']
-            experience = vacancy['experience']['name']
-            schedule = vacancy['schedule']['name']
-            employment = vacancy['employment']['name']
-            requirement = cls.check_source_info(
+                salary_from = Vacancy.check_data_int(vacancy.get('salary').get('from'))
+                salary_to = Vacancy.check_data_int(vacancy.get('salary').get('to'))
+                currency = Vacancy.check_data_str(vacancy['salary']['currency'])
+            employer = Vacancy.check_data_str(vacancy['employer']['name'])
+            experience = Vacancy.check_data_str(vacancy['experience']['name'])
+            schedule = Vacancy.check_data_str(vacancy['schedule']['name'])
+            employment = Vacancy.check_data_str(vacancy['employment']['name'])
+            requirement = Vacancy.check_data_str(
                 vacancy['snippet']['requirement'])
-            responsibility = cls.check_source_info(
+            responsibility = Vacancy.check_data_str(
                 vacancy['snippet']['responsibility'])
             professional_roles = ', '.join(
                 [professional_role['name'] for professional_role in
@@ -77,10 +77,16 @@ class Vacancy:
         return returned_list
 
     @staticmethod
-    def check_source_info(value):
+    def check_data_str(value):
         if value:
             return value
         return 'информация не была найдена'
+
+    @staticmethod
+    def check_data_int(value):
+        if value:
+            return value
+        return 0
 
     def get_currency(self, currency):
         try:
@@ -127,7 +133,7 @@ class Vacancy:
                     f"{self.salary_to} {self.currency}")
 
     def __eq__(self, other):  # – для равенства ==
-        if isinstance(other, (Vacancy, int)):
+        if not isinstance(other, (Vacancy, int)):
             raise TypeError("Операнд справа должен иметь тип int или Vacancy")
         if type(other) is type(self):
             return self.salary_from == other.salary_from

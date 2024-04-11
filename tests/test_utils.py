@@ -1,7 +1,8 @@
 import random
 
 from src.utils import get_vacancies_by_salary, get_filtered_vacancies, \
-    get_sorted_vacancies, get_top_vacancies, print_vacancies, user_interact
+    get_sorted_vacancies, get_top_vacancies, print_vacancies, work_with_file, \
+    work_with_api
 
 
 def test_print_vacancies(list_object_vacancies):
@@ -42,5 +43,9 @@ def test_get_filtered_vacancies(big_list_object_vacancies):
     assert len(get_filtered_vacancies(big_list_object_vacancies, ['backend', 'SQL'])) == 22
 
 
-def test_user_interact():
-    assert user_interact() ==
+def test_work_with_file(for_work_with_file):
+    assert work_with_file() is None
+
+
+def test_work_with_api(for_work_with_api):
+    assert work_with_api() is None
