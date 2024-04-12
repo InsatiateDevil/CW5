@@ -9,6 +9,11 @@ TEST_VACATIONS = pathlib.Path.joinpath(ROOT_DIR, 'test_vacancies.json')
 
 
 def get_filtered_vacancies(vacancies_list, words_for_filter):
+    """
+    :param vacancies_list: принимаемый лист для фильтрации по словам
+    :param words_for_filter: список слов, принимаемый для фильтрации списка
+    :return: отфильтрованный список
+    """
     filtered_list = []
     for vacancy in vacancies_list:
         for word in words_for_filter:
@@ -19,6 +24,12 @@ def get_filtered_vacancies(vacancies_list, words_for_filter):
 
 
 def get_vacancies_by_salary(vacancies, min_salary):
+    """
+    :param vacancies: список вакансий из которого вернутся лишь те зарплаты, чьё
+    значение выше поступившего аргумента min_salary
+    :param min_salary: значение зарплаты служащее фильтром для списка вакансий
+    :return: список вакансий с зарплатами выше указанной
+    """
     only_salary_vacancies = []
     for vacancy in vacancies:
         if vacancy >= min_salary:
@@ -27,19 +38,26 @@ def get_vacancies_by_salary(vacancies, min_salary):
 
 
 def get_sorted_vacancies(vacancies):
+    """Возвращает списко вакансий, отсортированный по минимальной заработной
+    плате"""
     return sorted(vacancies, reverse=True)
 
 
 def get_top_vacancies(vacancies, stop):
+    """Возвращает срез от списка vacancies"""
     return vacancies[:stop]
 
 
 def print_vacancies(vacancies):
+    """Печатает каждую вакансию из поданного списка"""
     for vacancy in vacancies:
         print(vacancy)
 
 
 def work_with_file():
+    """Функция осуществляющая связь с пользователем и являющаяся неким подобием
+     панели управления программой, вызывается в случае если пользователь решил
+     работать с вакансиями, выгружаемыми из файла"""
     user_input = 0
     while user_input != 'назад':
         if user_input in ['стоп', 'stop']:
@@ -147,6 +165,9 @@ def work_with_file():
 
 
 def work_with_api():
+    """Функция осуществляющая связь с пользователем и являющаяся неким подобием
+         панели управления программой, вызывается в случае если пользователь решил
+         работать с вакансиями, выгружаемыми с АПИ ХХ.ру"""
     user_input = 0
     print('В этом блоке вы можете создать запрос для api.hh.ru и в '
           'последующем выполнять манипуляции с полученной информацие\n'

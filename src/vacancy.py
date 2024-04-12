@@ -5,6 +5,8 @@ from config import ROOT_DIR
 
 
 class Vacancy:
+    """Класс Vacancy, для работы с вакансиями (выгруженными из того или иного
+    места)"""
     def __init__(self, name, salary_from, salary_to, employer, currency,
                  experience, schedule, employment, requirement, responsibility,
                  professional_roles, url):
@@ -23,6 +25,8 @@ class Vacancy:
 
     @classmethod
     def get_list_with_objects(cls, list_with_vacancies):
+        """Класс-метод для создания ЭК из словарей формата Response, получаемых
+        с АПИ ХХ.ру"""
         returned_list = []
         for vacancy in list_with_vacancies:
             name = Vacancy.check_data_str(vacancy['name'])
@@ -33,7 +37,8 @@ class Vacancy:
             else:
                 salary_from = Vacancy.check_data_int(vacancy.get('salary').get('from'))
                 salary_to = Vacancy.check_data_int(vacancy.get('salary').get('to'))
-                currency = Vacancy.check_data_str(vacancy['salary']['currency'])
+                currency = Vacancy.convert_currency(Vacancy.check_data_str
+                                                    (vacancy['salary']['currency']))
             employer = Vacancy.check_data_str(vacancy['employer']['name'])
             experience = Vacancy.check_data_str(vacancy['experience']['name'])
             schedule = Vacancy.check_data_str(vacancy['schedule']['name'])
@@ -55,6 +60,8 @@ class Vacancy:
 
     @classmethod
     def get_objects_list_from_objects_dict(cls, list_with_vacancies):
+        """Класс-метод для создания ЭК из словарей формата Vacancy.__dict__,
+        получаемых при выгрузке вакансий из файла"""
         returned_list = []
         for vacancy in list_with_vacancies:
             name = vacancy['name']
@@ -78,25 +85,21 @@ class Vacancy:
 
     @staticmethod
     def check_data_str(value):
+        """Валидатор для стороковых значений"""
         if value:
             return value
         return 'информация не была найдена'
 
     @staticmethod
     def check_data_int(value):
+        """Валидатор для целочисленных значений"""
         if value:
             return value
         return 0
 
-    def get_currency(self, currency):
-        try:
-            return self.convert_currency(currency.get('currency'))
-        except KeyError:
-            return 'тип валюты не указан'
-        except AttributeError:
-            return 'тип валюты не указан'
-
-    def convert_currency(self, currency):
+    @staticmethod
+    def convert_currency(currency):
+        """Метод для конвертации валюты при выводе пользователю"""
         if currency:
             if currency == 'RUR':
                 return 'руб.'
@@ -114,7 +117,7 @@ class Vacancy:
             return 'валюта не была указана'
         else:
             return (f'неизвестный тип валюты '
-                    f'с кодовым обозначением {self.currency}')
+                    f'с кодовым обозначением {currency}')
 
     def get_salary(self):
         if not (self.salary_from or self.salary_to):
@@ -187,11 +190,3 @@ class Vacancy:
                 f'Название должности: {self.professional_roles}\n'
                 f'Ссылка на страницу вакансии: {self.url}\n'
                 f'============================================================')
-
-
-if __name__ == '__main__':
-    TEST_PATH = pathlib.Path.joinpath(ROOT_DIR, 'data', 'test_vacancies.json')
-    with open(TEST_PATH, 'r', encoding='utf-8') as file:
-        list_vacation = json.load(file)
-    for vacation in Vacancy.get_list_with_objects(list_vacation["items"]):
-        print(vacation)
