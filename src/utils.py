@@ -1,6 +1,8 @@
 import os
 import pathlib
 from config import ROOT_DIR
+from src.company import Company
+from src.dbmanager import DBManager
 from src.headhunterapi import HeadHunterAPI
 from src.jsonworker import JSONWorker
 from src.vacancy import Vacancy
@@ -52,6 +54,91 @@ def print_vacancies(vacancies):
     """Печатает каждую вакансию из поданного списка"""
     for vacancy in vacancies:
         print(vacancy)
+
+
+def add_data_to_db():
+    user_input = input('Желаете наполнить базу данных информацией о вакансиях'
+                       ' и компаниях? yes/no')
+    if user_input == 'yes':
+        company_ids = input("Введите id компаний среди вакансий которой будет"
+                            "осуществляться поиск(через пробел)"
+                            "или можете оставить поле пустым для использования "
+                            "фиксированного списка компаний")
+        if company_ids.strip() == '':
+            company_ids = ['3127', '3776', '1122462', '2180', '87021',
+                           '1740', '80', '4181', '15478', '78638']
+        else:
+            company_ids = company_ids.split(' ')
+        hh_api = HeadHunterAPI()
+        hh_vacancies = []
+        for company_id in company_ids:
+            hh_vacancies = hh_api.load_vacancies(employer_id=company_id)
+        hh_companies = hh_api.load_companies(company_ids)
+        vacancies_list = Vacancy.get_list_with_objects(hh_vacancies)
+        companies_list = Company.get_list_with_objects(hh_companies)
+        dbmanager = DBManager()
+        dbmanager.load_to_db(vacancies_list, companies_list)
+
+
+if __name__ == '__main__':
+    add_data_to_db()
+
+
+def load_vacancies():
+    while True:
+        user_input = int(input('В этом блоке вы можете выгружать вакансии для\n'
+                               'последующего выполнения манипуляций\n'
+                               'с полученной информацие\n'
+                               'Кнопки управления:\n'
+                               '1 - выгрузить вакансии из файла\n'
+                               '2 - выгрузить вакансии из базы данных\n'
+                               '3 - выгрузить вакансии с HeadHunterAPI\n').strip())
+        if user_input not in [1, 2, 3]:
+            print('Попробуйте ввести команду снова')
+            continue
+        elif user_input == 1:
+            file_name_1 = input("Введите название файла(без расширения - на "
+                                "данный момент программа работает автоматически"
+                                " с файлами формата json")
+            file_path_1 = os.path.join(ROOT_DIR, 'data',
+                                       file_name_1 + '.json')
+            if os.path.exists(file_path_1):
+                jsonworker = JSONWorker(file_path_1)
+                json_vacancies = jsonworker.load_vacancies()
+                vacancies_list = Vacancy.get_objects_list_from_objects_dict(
+                    json_vacancies)
+                print(f'Выгрузка завершена, список с вакансиями создан\n'
+                      f'Вакансий в списке: {len(vacancies_list)}\n')
+                break
+            else:
+                print(f'Выгрузка не была произведена, не найден файл '
+                      f'по следующему пути - {file_path_1}')
+        elif user_input == 2:
+            pass
+        elif user_input == 3:
+            search_query = input("Введите ваш поисковый запрос")
+            hh_api = HeadHunterAPI()
+            hh_vacancies = hh_api.load_vacancies(search_query)
+            vacancies_list = Vacancy.get_list_with_objects(hh_vacancies)
+            print(f'Запрос выполнен, список с вакансиями создан\n'
+                  f'Вакансий в списке: {len(vacancies_list)}\n')
+    try:
+        bool(vacancies_list)
+    except NameError:
+        print('Что-то пошло не так - список вакансий не был создан')
+    return vacancies_list
+
+
+def user_interaction(vacancies):
+    pass
+
+
+def save_data(data):
+    pass
+
+
+def work_with_db():
+    pass
 
 
 def work_with_file():
@@ -253,3 +340,111 @@ def work_with_api():
             print('Что-то пошло не так')
     else:
         print('Попробуйте ввести вновь')
+
+
+def user_interaction(user_input):
+    """Функция осуществляющая связь с пользователем и являющаяся неким подобием
+       панели управления программой"""
+    while user_input != 'назад':
+        if user_input in ['стоп', 'stop']:
+            break
+        print('В этом блоке вы можете выгружать вакансии из файла и в '
+              'последующем выполнять манипуляции с полученной информацие\n'
+              'Кнопки управления:\n'
+              '1 - выгрузить вакансии из файла\n'
+              '2 - отфильтровать вакансии по ключевым словам\n'
+              '3 - оставить вакансии с З/П, выше N\n'
+              '4 - сортировать вакансии по убыванию минимальной З/П\n'
+              '5 - оставить N вакансий от начала списка\n'
+              '6 - распечатать информацию о всех вакансиях в текущем списке\n'
+              '7 - сохранить текущий список вакансий в тот же файл\n'
+              '8 - сохранить текущий список вакансий в другой файл\n')
+        while user_input != 'назад':
+            user_input = input(
+                "Что желаете сделать? Для возврата введите 'назад'\n")
+            if user_input in ['стоп', 'stop']:
+                break
+            if user_input == '1':
+                file_name_1 = input("Введите название файла")
+                file_path_1 = os.path.join(ROOT_DIR, 'data',
+                                           file_name_1)
+                if os.path.exists(file_path_1):
+                    jsonworker = JSONWorker(file_path_1)
+                    json_vacancies = jsonworker.load_vacancies()
+                    vacancies_list = Vacancy.get_objects_list_from_objects_dict(
+                        json_vacancies)
+                    print('Выгрузка завершена, список с вакансиями создан')
+                    continue
+                else:
+                    print('Выгрузка не была произведена, файла с таким'
+                          ' именем в папке "data" нет')
+            try:
+                bool(vacancies_list)
+            except NameError:
+                print("Для дальнейшей работы необходимо создать список"
+                      " вакансий")
+                continue
+            if user_input == '2':
+                filter_words = input(
+                    "Введите ключевые слова для фильтрации "
+                    "вакансий через пробел: ").split(" ")
+                vacancies_list = get_filtered_vacancies(vacancies_list,
+                                                        filter_words)
+                print('Вакансии отфильтрованы по ключевым словам')
+            elif user_input == '3':
+                min_salary = int(
+                    input("Введите нижний порог заработной платы: "))
+                vacancies_list = get_vacancies_by_salary(vacancies_list,
+                                                         min_salary)
+                print('В списке остались только вакансии с зарплатой'
+                      ' выше указанной')
+            elif user_input == '4':
+                vacancies_list = get_sorted_vacancies(vacancies_list)
+                print('Вакансии отсортированы')
+            elif user_input == '5':
+                top_n = int(input(
+                    "Введите количество вакансий для вывода в топ N: "))
+                vacancies_list = get_top_vacancies(vacancies_list,
+                                                   top_n)
+                print('Срез выполнен')
+            elif user_input == '6':
+                print_vacancies(vacancies_list)
+            elif user_input == '7':
+                confirm_rewrite = input('Уверены, что хотите '
+                                        'перезаписать файл? д/н')
+                if confirm_rewrite == 'д':
+                    jsonworker.write_vacancies(vacancies_list)
+                    print('Список вакансий был перезаписан в '
+                          'изначальный файл')
+                else:
+                    print('Список вакансий не был записан')
+            elif user_input == '8':
+                file_name_2 = input(
+                    'Введите название файла для сохранения данных')
+                file_path_2 = os.path.join(ROOT_DIR, 'data',
+                                           file_name_2)
+                jsonworker = JSONWorker(file_path_2)
+                if os.path.exists(file_path_2):
+                    confirm = input(
+                        'Такой файл уже есть, '
+                        'желаете вести работу в нем? д/н').lower().strip()
+                    if confirm == 'д':
+                        confirm = input(
+                            'Желаете перезаписать или дописать файл? п/д')
+                        if confirm == 'д':
+                            jsonworker.add_vacancies(vacancies_list)
+                            print('Вакансии добавлены в файл')
+                        elif confirm == 'п':
+                            jsonworker.write_vacancies(vacancies_list)
+                            print(
+                                'Вакансии сохранены в файл с перезаписью')
+                        else:
+                            print('Попробуйте ввести вновь')
+                else:
+                    jsonworker.write_vacancies(vacancies_list)
+                    print('Вакансии сохранены в файл')
+            elif user_input not in ['1', '2', '3', '4', '5',
+                                    '6', '7', '8', 'stop', 'стоп']:
+                print('Попробуйте ввести вновь')
+            else:
+                print('Что-то пошло не так')

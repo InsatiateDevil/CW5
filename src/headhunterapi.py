@@ -1,4 +1,6 @@
 import requests
+
+from src.company import Company
 from src.parser import Parser
 
 
@@ -8,20 +10,40 @@ class HeadHunterAPI(Parser):
     """
 
     def __init__(self):
-        self.url = 'https://api.hh.ru/vacancies'
+        self.url = ''
         self.headers = {'User-Agent': 'HH-User-Agent'}
-        self.params = {'text': '', 'page': 0, 'per_page': 100}
+        self.params = {}
         self.vacancies = []
+        self.companies = []
 
-    def load_vacancies(self, keyword):
+    def load_vacancies(self, keyword: str = '', employer_id=''):
         """
+        :param employer_id: возможно передавать идентификационный номер
+        для поиска вакансий у конкретного работодателя
         :param keyword: слово для поиска по вакансиям на ХХ.ру
         :return: список вакансий пришедший с АПИ ХХ.р
         """
+        self.url = 'https://api.hh.ru/vacancies'
+        self.params['page'] = 0
+        self.params['per_page'] = 100
         self.params['text'] = keyword
-        while self.params.get('page') != 20:
-            response = requests.get(self.url, headers=self.headers, params=self.params)
+        self.params['employer_id'] = employer_id
+        while self.params.get('page') != 2:
+            response = requests.get(self.url, headers=self.headers,
+                                    params=self.params)
             vacancies = response.json()['items']
             self.vacancies.extend(vacancies)
             self.params['page'] += 1
         return self.vacancies
+
+    def load_companies(self, company_ids: list):
+        """
+        :param company_ids: список айди вакансий для их поиска на ХХ.ру
+        :return: список с информацией о компаниях пришедший с АПИ ХХ.р
+        """
+        for company_id in company_ids:
+            self.url = 'https://api.hh.ru/employers/' + company_id
+            response = requests.get(self.url, headers=self.headers,
+                                    params=self.params)
+            self.companies.append(response.json())
+        return self.companies
