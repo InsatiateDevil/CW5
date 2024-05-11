@@ -55,13 +55,16 @@ class DBManager:
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s) 
                 returning *;""", company.to_list())
         for vacancy in vacancies:
-            with self.conn:
-                self.cur.execute(f"""INSERT INTO vacancies (vacancy_id, 
-                vacancy_name, salary_from, salary_to, employer_id,
-                currency, experience, schedule, employment, requirement, 
-                responsibility, professional_roles, url) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                 returning *;""", vacancy.to_list())
+            try:
+                with self.conn:
+                    self.cur.execute(f"""INSERT INTO vacancies (vacancy_id, 
+                    vacancy_name, salary_from, salary_to, employer_id,
+                    currency, experience, schedule, employment, requirement, 
+                    responsibility, professional_roles, url) 
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                     returning *;""", vacancy.to_list())
+            except psycopg2.errors.UniqueViolation:
+                print(vacancy)
 
     def get_companies_and_vacancies_count(self):
         with self.conn:

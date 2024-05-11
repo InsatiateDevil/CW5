@@ -1,6 +1,4 @@
 import requests
-
-from src.company import Company
 from src.parser import Parser
 
 
@@ -27,8 +25,10 @@ class HeadHunterAPI(Parser):
         self.params['page'] = 0
         self.params['per_page'] = 100
         self.params['text'] = keyword
-        self.params['employer_id'] = employer_id
-        while self.params.get('page') != 2:
+        if employer_id != '':
+            self.params['employer_id'] = employer_id
+        print('Происходит парсинг вакансий\n')
+        while self.params.get('page') != 10:
             response = requests.get(self.url, headers=self.headers,
                                     params=self.params)
             vacancies = response.json()['items']

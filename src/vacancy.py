@@ -189,7 +189,7 @@ class Vacancy:
         return (f'============================================================'
                 f'\nВакансия: {self.name}\n'
                 f'{self.get_salary()}\n'
-                f'Наниматель: {self.employer}\n'
+                f'Наниматель: {self.employer_id}\n'
                 f'Опыт работы: {self.experience}\n'
                 f'График работы: {self.schedule}\n'
                 f'Занятость: {self.employment}\n'
