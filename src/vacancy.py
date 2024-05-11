@@ -1,19 +1,16 @@
-import json
-import pathlib
-
-from config import ROOT_DIR
-
-
 class Vacancy:
     """Класс Vacancy, для работы с вакансиями (выгруженными из того или иного
     места)"""
-    def __init__(self, name, salary_from, salary_to, employer, currency,
+
+    def __init__(self, vacancy_id, name, salary_from, salary_to, employer_id,
+                 currency,
                  experience, schedule, employment, requirement, responsibility,
                  professional_roles, url):
+        self.vacancy_id = vacancy_id
         self.name = name
         self.salary_from = salary_from
         self.salary_to = salary_to
-        self.employer = employer
+        self.employer_id = employer_id
         self.currency = currency
         self.experience = experience
         self.schedule = schedule
@@ -29,17 +26,21 @@ class Vacancy:
         с АПИ ХХ.ру"""
         returned_list = []
         for vacancy in list_with_vacancies:
+            vacancy_id = vacancy['id']
             name = Vacancy.check_data_str(vacancy['name'])
             if not vacancy.get('salary'):
                 salary_from = 0
                 salary_to = 0
                 currency = 0
             else:
-                salary_from = Vacancy.check_data_int(vacancy.get('salary').get('from'))
-                salary_to = Vacancy.check_data_int(vacancy.get('salary').get('to'))
+                salary_from = Vacancy.check_data_int(
+                    vacancy.get('salary').get('from'))
+                salary_to = Vacancy.check_data_int(
+                    vacancy.get('salary').get('to'))
                 currency = Vacancy.convert_currency(Vacancy.check_data_str
-                                                    (vacancy['salary']['currency']))
-            employer = Vacancy.check_data_str(vacancy['employer']['name'])
+                                                    (vacancy['salary'][
+                                                         'currency']))
+            employer_id = Vacancy.check_data_str(vacancy['employer']['id'])
             experience = Vacancy.check_data_str(vacancy['experience']['name'])
             schedule = Vacancy.check_data_str(vacancy['schedule']['name'])
             employment = Vacancy.check_data_str(vacancy['employment']['name'])
@@ -51,7 +52,8 @@ class Vacancy:
                 [professional_role['name'] for professional_role in
                  vacancy['professional_roles']])
             url = vacancy['alternate_url']
-            vacancy_object = cls(name, salary_from, salary_to, employer,
+            vacancy_object = cls(vacancy_id, name, salary_from, salary_to,
+                                 employer_id,
                                  currency, experience, schedule, employment,
                                  requirement, responsibility,
                                  professional_roles, url)
@@ -119,6 +121,12 @@ class Vacancy:
             return (f'неизвестный тип валюты '
                     f'с кодовым обозначением {currency}')
 
+    def to_list(self):
+        return [self.vacancy_id, self.name, self.salary_from, self.salary_to,
+                self.employer_id, self.currency, self.experience, self.schedule,
+                self.employment, self.requirement, self.responsibility,
+                self.professional_roles, self.url]
+
     def get_salary(self):
         if not (self.salary_from or self.salary_to):
             return "Заработная плата: не указана"
@@ -181,7 +189,7 @@ class Vacancy:
         return (f'============================================================'
                 f'\nВакансия: {self.name}\n'
                 f'{self.get_salary()}\n'
-                f'Наниматель: {self.employer}\n'
+                f'Наниматель: {self.employer_id}\n'
                 f'Опыт работы: {self.experience}\n'
                 f'График работы: {self.schedule}\n'
                 f'Занятость: {self.employment}\n'

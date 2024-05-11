@@ -35,7 +35,7 @@ class JSONWorker(FileWorker):
         with open(self.path, 'w', encoding='utf-8') as file:
             json.dump(old_data, file, ensure_ascii=False, indent=4)
 
-    def del_vacancies_one(self, vacancy):
+    def del_vacancy_one(self, vacancy):
         with open(self.path, 'r', encoding='utf-8') as file:
             old_data = json.load(file)
             if vacancy in old_data:
